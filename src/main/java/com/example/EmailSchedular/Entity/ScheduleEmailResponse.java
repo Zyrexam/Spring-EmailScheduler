@@ -2,13 +2,12 @@ package com.example.EmailSchedular.Entity;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+
+@Setter
+@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ScheduleEmailResponse {
     private boolean success;
@@ -20,4 +19,12 @@ public class ScheduleEmailResponse {
         this.success = success;
         this.message = message;
     }
+
+    public ScheduleEmailResponse(boolean success, String jobId, String jobGroup, String message) {
+        this.success = success;
+        this.jobId = jobId;
+        this.jobGroup = jobGroup;
+        this.message = message;
+    }
+
 }

@@ -1,33 +1,58 @@
 package com.example.EmailSchedular.Job;
 
-
-import com.example.EmailSchedular.Service.EmailService;
-import jakarta.mail.MessagingException;
-import org.quartz.Job;
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.mail.MailProperties;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+
+import java.nio.charset.StandardCharsets;
+
 @Component
-public class EmailJob implements Job {
+public class EmailJob extends QuartzJobBean {
+    private static final Logger logger = LoggerFactory.getLogger(EmailJob.class);
 
     @Autowired
-    private EmailService emailService;
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private MailProperties mailProperties;
 
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        logger.info("Executing Job with key {}", jobExecutionContext.getJobDetail().getKey());
 
-        String to = context.getJobDetail().getJobDataMap().getString("to");
-        String subject = context.getJobDetail().getJobDataMap().getString("subject");
-        String text = context.getJobDetail().getJobDataMap().getString("text");
+        JobDataMap jobDataMap = jobExecutionContext.getMergedJobDataMap();
+        String subject = jobDataMap.getString("subject");
+        String body = jobDataMap.getString("body");
+        String recipientEmail = jobDataMap.getString("email");
 
+        sendMail(mailProperties.getUsername(), recipientEmail, subject, body);
+    }
+
+    private void sendMail(String fromEmail, String toEmail, String subject, String body) {
         try {
-            emailService.sendEmail(to, subject, text);
-        } catch (MessagingException e) {
-            throw new JobExecutionException(e);
+            logger.info("Sending Email to {}", toEmail);
+            MimeMessage message = mailSender.createMimeMessage();
+
+            MimeMessageHelper messageHelper = new MimeMessageHelper(message, StandardCharsets.UTF_8.toString());
+            messageHelper.setSubject(subject);
+            messageHelper.setText(body, true);
+            messageHelper.setFrom(fromEmail);
+            messageHelper.setTo(toEmail);
+
+            mailSender.send(message);
+        } catch (MessagingException ex) {
+            logger.error("Failed to send email to {}", toEmail);
         }
     }
 }
-
-

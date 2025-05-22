@@ -1,32 +1,31 @@
 package com.example.EmailSchedular.Entity;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+
+@Setter
+@Getter
 public class ScheduleEmailRequest {
     @Email
-    @NotBlank(message = "Email cannot be empty")
+    @NotEmpty
     private String email;
 
-    @NotBlank(message = "Subject cannot be empty")
+    @NotEmpty
     private String subject;
 
-    @NotBlank(message = "Body cannot be empty")
+    @NotEmpty
     private String body;
 
-    @NotNull(message = "Scheduled time cannot be null")
-    private LocalDateTime scheduledTime;
+    @NotNull
+    private LocalDateTime dateTime;
 
-    @NotNull(message = "Time zone cannot be null")
+    @NotNull
     private ZoneId timeZone;
+
 }
